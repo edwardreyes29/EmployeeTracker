@@ -71,3 +71,5 @@ VALUES("Christian", "Eckenrode", 3, 3);
 
 SELECT * FROM employee;
 
+SELECT DISTINCT m.id, CONCAT(m.first_name, ' ', m.last_name) AS manager
+FROM employee AS m JOIN employee AS e ON e.manager_id = m.id;
