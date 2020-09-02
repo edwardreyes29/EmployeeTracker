@@ -80,6 +80,9 @@ VALUES("Mikasa", "Ackerman", 3, 9);
 
 SELECT * FROM employee;
 
+-- Update employee role
+UPDATE employee SET role_id = 3 WHERE id = 12;
+
 UPDATE employee SET manager_id = null WHERE manager_id = 12;
 DELETE FROM employee WHERE id = 15;
 DELETE FROM employee WHERE id = 19;

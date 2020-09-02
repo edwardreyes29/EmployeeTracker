@@ -26,26 +26,42 @@ const menu_questions = [
 const add_employee_questions = [
     {
         type: "input",
-        message: "Enter Employee's first name: ",
+        message: "Enter employee's first name: ",
         name: "first_name"
     },
     {
         type: "input",
-        message: "Enter Employee's last name: ",
+        message: "Enter employee's last name: ",
         name: "last_name"
     },
     {
         type: "list",
-        message: "What is the Employee's Role?",
+        message: "What is the employee's role?",
         name: "role",
         choices: []
     },
     {
         type: "list",
-        message: "Who is the Employee's Manager?",
+        message: "Who is the employee's manager?",
         name: "manager",
         choices: []
     }
+]
+
+const update_employee_role_questions = [
+    {
+        type: "list",
+        message: "What is the name of the employee whose role you want to change?",
+        name: "employee",
+        choices: []
+    },
+    {
+        type: "list",
+        message: "What is the employee's new role?",
+        name: "role",
+        choices: []
+    }
+    
 ]
 
 const getMenuQuestion = questions => {
@@ -62,5 +78,6 @@ menu_question_obj = getMenuQuestion(menu_questions)
 module.exports = {
     menu_questions,
     menu_question_obj,
-    add_employee_questions
+    add_employee_questions,
+    update_employee_role_questions
 }

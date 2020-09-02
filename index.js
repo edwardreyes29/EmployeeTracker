@@ -2,7 +2,7 @@ const inquirer = require("inquirer");
 const connection = require("./config/connection.js");
 const cTable = require("console.table");
 
-let { menu_questions, menu_question_obj, add_employee_questions } = require("./model/questions.js")
+let { menu_questions, menu_question_obj, add_employee_questions, update_employee_role_questions } = require("./model/questions.js")
 let { queries } = require("./model/queries.js")
 
 async function displayMenu() {
@@ -39,13 +39,14 @@ async function displayMenu() {
             await removeEmployee(query5);
             break;
         case 5: // Update Employee Role
+            await updateEmployee();
             break;
         case 6: // Update Employee Manager
             break;
         case 7: // View All Roles
             let title7 = "Roles:\n======"
             let query7 =
-            `SELECT * FROM role`;
+                `SELECT * FROM role`;
             displayTable(title7, query7);
             break;
         case 8: // Add Role
@@ -55,13 +56,13 @@ async function displayMenu() {
         case 10: // View All Departments
             let title10 = "Departments:\n============"
             let query10 =
-            `SELECT * FROM department`;
+                `SELECT * FROM department`;
             displayTable(title10, query10);
             break;
         case 11: // View Total Utilized Department Budget
             break;
         case 12: // Add Department
-            break; 
+            break;
         case 13: // Remove Department
             break;
         case 14:    // Quit
@@ -158,9 +159,55 @@ async function removeEmployee(query) {
                 let query =
                     `DELETE FROM employee WHERE id=${employeeObject[response.employee]}`
                 sendQuery(query);
-                
             })
     });
 }
+
+async function updateEmployee() {
+    // Get role titles and ids to store the in array for inquirer prompt
+    // update_employee_role_questions[1].choices = await getRoleArray();
+    // update_employee_role_questions[0].choices = await getEmployeeArray();
+    // console.log(update_employee_role_questions[1].choices)
+    // console.log(update_employee_role_questions[0].choices)
+    getEmployeeArray().then((value) => console.log(value))
+}
+
+async function getRoleArray() {
+    let roleQuery = `SELECT id, title FROM role ORDER BY role.id`;
+    let roleArray = [];
+    let roleObject = {};
+    await connection.query(roleQuery, function (err, data) {
+        if (err) throw err;
+        data.forEach(rowData => {
+            roleObject[rowData.title] = rowData.id; // This is used to get the id of the role when query is sent
+            roleArray.push(rowData.title);  // Store each role title in array to use for inquirer prompt
+        });
+        // console.log(roleArray);
+        return roleArray;
+    });
+}
+let getEmployeeArray = async () => { 
+    let employeeQuery = `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`;
+    let employeeArray = [];
+    let employeeObject = {};
+    connection.query(employeeQuery, function (err, data) {
+        if (err) throw err;
+        data.forEach(rowData => {
+            employeeObject[rowData.name] = rowData.id; // This is used to get the id of the role when query is sent
+            employeeArray.push(rowData.name);  // Store each role title in array to use for inquirer prompt
+        });
+        return employeeArray;
+    });
+};
+
+async function update_employeePrompt(questions) {
+    await inquirer.prompt(update_employee_role_questions)
+        .then(function (response) {
+            let query =
+                `UPDATE employee SET role_id = ${roleObject[response.role]} WHERE id = ${employee.object[response.employee]}`;
+            sendQuery(query);
+        });
+}
+
 
 
