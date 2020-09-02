@@ -1,34 +1,21 @@
-var inquirer = require("inquirer");
-var connection = require("./config/connection.js");
-const cTable = require('console.table');
+const inquirer = require("inquirer");
+const connection = require("./config/connection.js");
+const cTable = require("console.table");
 
-const menu_questions = [
-    {
-        type: "list",
-        message: "What would you like to do?",
-        name: "choice",
-        choices: [
-            'View All Employees',
-            'View All Employees By Department',
-            'View All Employees By Manager',
-            'Add Employee',
-            'Remove Employee',
-            'Update Employee Role',
-            'Update Employee Manager',
-            'View All Roles',
-            'Add Role',
-            'Remove Role',
-            'View All Departments',
-            'View Total Utilized Department Budget',
-            'Add Department',
-            'Remove Department',
-            'Quit'
-        ]
-    }
-];
+let { menu_questions, menu_question_obj } = require("./model/questions.js")
+
+console.log(menu_question_obj)
+// const displayMenu = () => {
+//     inquirer.prompt(menu_questions).then(function(response) {
+//         // switch(response.choice) {
+
+//         // }
+//     })
+// }
+
+
 
 async function displayMenu() {
-
     // Get choice from user
     let menuChoice = await inquirer.prompt(menu_questions)
         .then(function (response) {
@@ -46,8 +33,8 @@ async function displayMenu() {
             ORDER BY e.id`
 
         displayTable(query);
-    
-    // Display employees by department
+
+        // Display employees by department
     } else if (menuChoice === 'View All Employees By Department') {
         let query =
             `SELECT employee.id, employee.first_name, employee.last_name, department.name AS department
@@ -57,8 +44,8 @@ async function displayMenu() {
             ORDER BY employee.id`;
 
         displayTable(query);
-    
-    // Display employees by manager (if any)
+
+        // Display employees by manager (if any)
     } else if (menuChoice === 'View All Employees By Manager') {
         let query =
             `SELECT e.id, e.last_name, CONCAT(m.first_name, ' ', m.last_name) AS manager
@@ -66,7 +53,7 @@ async function displayMenu() {
 
         displayTable(query);
 
-    // Adds employee to DB
+        // Adds employee to DB
     } else if (menuChoice === 'Add Employee') {
 
         // Get role titles and ids to store the in array for inquirer prompt
@@ -127,45 +114,14 @@ async function displayMenu() {
         ]
         await inquirer.prompt(add_employee_questions)
             .then(function (response) {
-                let query = 
+                let query =
                     `INSERT INTO employee(first_name, last_name, role_id, manager_id)
                     VALUES("${response.first_name}", "${response.last_name}", ${roleObject[response.role]}, ${managerObject[response.manager]})`;
                 sendQuery(query);
             });
 
     } else if (menuChoice === 'Remove Employee') {
-        // Get role titles and ids to store the in array for inquirer prompt
-        let employeeQuery =
-            `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name
-            FROM employee;`
-        let employeeArray = [];
-        let employeeObject = {};
-        await connection.query(employeeQuery, function (err, data) {
-            if (err) throw err;
-            data.forEach(rowData => {
-                employeeObject[rowData.name] = rowData.id; // This is used to get the id of the role when query is sent
-                employeeArray.push(rowData.name);  // Store each role title in array to use for inquirer prompt
-            });
-        });
-
-         // Create Prompt with updated roleArray and managerArray
-        const remove_employee_questions = [
-            {
-                type: "list",
-                message: "Which Employee do you want to remove?",
-                name: "employee",
-                choices: employeeArray
-            }
-        ];
-        await inquirer.prompt(remove_employee_questions)
-        .then(function (response) {
-            let query = 
-                `DELETE FROM employee WHERE id=${employeeObject[response.name]}`
-            console.log(query)   
-            // sendQuery(query);
-        })
-
-
+        removeEmployee();
     } else if (menuChoice === 'Update Employee Role') {
         console.log('Update Employee Role')
     } else if (menuChoice === 'Update Employee Manager') {
@@ -196,6 +152,7 @@ async function displayMenu() {
     }
     displayMenu();
 }
+displayMenu();
 
 const displayTable = query => {
     connection.query(query, function (err, data) {
@@ -209,7 +166,39 @@ const sendQuery = query => {
         if (err) throw err;
     })
 }
-displayMenu();
 
+const removeEmployee = () => {
+    // Get role titles and ids to store the in array for inquirer prompt
+    let employeeQuery =
+        `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name
+     FROM employee;`
+    let employeeArray = [];
+    let employeeObject = {};
+    let remove_employee_questions = [];
+    connection.query(employeeQuery, function (err, data) {
+        if (err) throw err;
+        data.forEach(rowData => {
+            employeeObject[rowData.name] = rowData.id; // This is used to get the id of the role when query is sent
+            employeeArray.push(rowData.name);  // Store each role title in array to use for inquirer prompt
+        });
+        remove_employee_questions = [
+            {
+                type: "list",
+                message: "Which Employee do you want to remove?",
+                name: "employee",
+                choices: employeeArray
+            }
+        ];
+        inquirer.prompt(remove_employee_questions)
+            .then(function (response) {
+                console.log(response)
+                console.log(employeeObject)
+                let query =
+                    `DELETE FROM employee WHERE id=${employeeObject[response.employee]}`
+                console.log(query)
+                // sendQuery(query);
+            })
+    });
+}
 
 
