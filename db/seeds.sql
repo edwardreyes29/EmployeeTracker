@@ -69,7 +69,23 @@ VALUES("Tom", "Allen", 7, 6);
 INSERT INTO employee(first_name, last_name, role_id, manager_id)
 VALUES("Christian", "Eckenrode", 3, 3);
 
+INSERT INTO employee(first_name, last_name, role_id)
+VALUES("Erwin", "Smith", 3);
+
+INSERT INTO employee(first_name, last_name, role_id, manager_id)
+VALUES("Levi", "Ackerman", 3, 9);
+
+INSERT INTO employee(first_name, last_name, role_id, manager_id)
+VALUES("Mikasa", "Ackerman", 3, 9);
+
 SELECT * FROM employee;
+
+UPDATE employee SET manager_id = null WHERE manager_id = 12;
+DELETE FROM employee WHERE id = 15;
+DELETE FROM employee WHERE id = 19;
 
 SELECT DISTINCT m.id, CONCAT(m.first_name, ' ', m.last_name) AS manager
 FROM employee AS m JOIN employee AS e ON e.manager_id = m.id;
+
+SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name
+FROM employee;

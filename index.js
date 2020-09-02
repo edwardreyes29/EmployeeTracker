@@ -151,9 +151,14 @@ async function removeEmployee(query) {
         ];
         inquirer.prompt(remove_employee_questions)
             .then(function (response) {
+                // Sets manager_id of employees whose manager_idj matches the id of the employee to be removed
+                let updateQuery = `UPDATE employee SET manager_id = null WHERE manager_id = ${employeeObject[response.employee]}`;
+                sendQuery(updateQuery);
+                // Once the foreign key constraint has been resolved, remove the employee
                 let query =
                     `DELETE FROM employee WHERE id=${employeeObject[response.employee]}`
                 sendQuery(query);
+                
             })
     });
 }
