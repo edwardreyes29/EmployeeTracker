@@ -171,7 +171,7 @@ const removeEmployee = () => {
     // Get role titles and ids to store the in array for inquirer prompt
     let employeeQuery =
         `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name
-     FROM employee;`
+        FROM employee;`
     let employeeArray = [];
     let employeeObject = {};
     let remove_employee_questions = [];
