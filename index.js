@@ -220,21 +220,8 @@ const updateEmployeeManager = async () => {
 
     await inquirer.prompt(update_employee_manager_questions).then(function (response) {
         let updateManagerQuery = `UPDATE employee SET manager_id = ${employeesObject[response.manager]} WHERE id = ${employeesObject[response.employee]};`
-        // let updateRoleQuery =
-        //     `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
         sendQuery(updateManagerQuery);
     });
 
     displayMenu();
 }
-
-// let managerQuery = queries[1];
-//     let managerArray = [];
-//     let managerObject = {};
-//     connection.query(managerQuery, function (err, data) {
-//         if (err) throw err;
-//         data.forEach(rowData => {
-//             managerObject[rowData.manager] = rowData.id;
-//             managerArray.push(rowData.manager);
-//         });
-//     });
