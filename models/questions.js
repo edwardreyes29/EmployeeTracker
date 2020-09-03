@@ -24,23 +24,23 @@ const questions = {
     add_employee_questions: [
         {
             type: "input",
-            message: "Enter employee's first name: ",
+            message: "Enter First Name:",
             name: "first_name"
         },
         {
             type: "input",
-            message: "Enter employee's last name: ",
+            message: "Enter Last Name:",
             name: "last_name"
         },
         {
             type: "list",
-            message: "What is the employee's role?",
+            message: "Enter Role: ",
             name: "role",
             choices: []
         },
         {
             type: "list",
-            message: "Who is the employee's manager?",
+            message: "Enter Manager",
             name: "manager",
             choices: []
         }
@@ -48,7 +48,7 @@ const questions = {
     remove_employee_questions : [
         {
             type: "list",
-            message: "Which Employee do you want to remove?",
+            message: "Select Employee:",
             name: "employee",
             choices: []
         }
@@ -56,17 +56,31 @@ const questions = {
     update_employee_role_questions: [
         {
             type: "list",
-            message: "What is the name of the employee whose role you want to change?",
+            message: "Select Employee To Update",
             name: "employee",
             choices: []
         },
         {
             type: "list",
-            message: "What is the employee's new role?",
+            message: "Enter New Role:",
             name: "role",
             choices: []
         }
         
+    ],
+    update_employee_manager_questions: [
+        {
+            type: "list",
+            message: "Select Employee To Update:",
+            name: "employee",
+            choices: []
+        },
+        {
+            type: "list",
+            message: "Select New Manager:",
+            name: "manager",
+            choices: []
+        }
     ]
     
 }

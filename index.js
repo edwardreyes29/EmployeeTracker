@@ -30,6 +30,7 @@ const displayMenu = () => {
                 updateEmployeeRole();
                 break;
             case 6: // Update Employee Manager
+                updateEmployeeManager();
                 break;
             case 7: // View All Roles
                 displayTable(queries.roles_table);
@@ -68,6 +69,7 @@ const getQueryResults = query => {
     });
 }
 
+/*========== Reusable functions ==========*/
 // This function sends a query
 const sendQuery = query => {
     connection.query(query, function (err, data) {
@@ -88,6 +90,24 @@ const displayTable = async query => {
     }
 }
 
+const generateDataArray = (data, property) => {
+    let array = [];
+    data.forEach(data => {
+        array.push(data[property]);
+    });
+    return array;
+}
+
+const generateDataObject = (data, property) => {
+    let obj = {};
+    data.forEach(data => {
+        obj[data[property]] = data.id;
+    })
+    return obj;
+}
+
+
+/*========== Employee DB functions ==========*/
 // Add an employee to DB
 const addEmployee = async () => {
     try {
@@ -96,20 +116,12 @@ const addEmployee = async () => {
         const employeeData = await getQueryResults(queries.employee_names_id);
 
         // Convert roles data to an object and array
-        let rolesArray = [];
-        let rolesObject = {};
-        rolesData.forEach(data => {
-            rolesArray.push(data.title);
-            rolesObject[data.title] = data.id;
-        });
+        let rolesArray = generateDataArray(rolesData, 'title');
+        let rolesObject = generateDataObject(rolesData, 'title');
 
         // Convert employee data to an object and array
-        let employeesArray = [];
-        let employeesObject = {};
-        employeeData.forEach(data => {
-            employeesArray.push(data.name);
-            employeesObject[data.name] = data.id;
-        });
+        let employeesArray = generateDataArray(employeeData, 'name');
+        let employeesObject = generateDataObject(employeeData, 'name');
 
         // Add None key name and null value to both manager objects
         employeesArray = employeesArray.concat(["None"]);
@@ -139,12 +151,8 @@ const removeEmployee = async () => {
         const employeeData = await getQueryResults(queries.employee_names_id);
 
         // Convert employee data to an object and array
-        let employeesArray = [];
-        let employeesObject = {};
-        employeeData.forEach(data => {
-            employeesArray.push(data.name);
-            employeesObject[data.name] = data.id;
-        });
+        let employeesArray = generateDataArray(employeeData, 'name');
+        let employeesObject = generateDataObject(employeeData, 'name');
 
         let remove_employee_questions = questions.remove_employee_questions;
         remove_employee_questions[0].choices = employeesArray;
@@ -156,7 +164,6 @@ const removeEmployee = async () => {
 
             let deleteQuery = `DELETE FROM employee WHERE id=${employeesObject[response.employee]}`;
             sendQuery(deleteQuery);
-            console.log("Success!!!");
         });
         displayMenu();
     } catch (err) {
@@ -165,6 +172,7 @@ const removeEmployee = async () => {
     }
 }
 
+// Updates employee's role
 const updateEmployeeRole = async () => {
     try {
         // Get roles and manger names
@@ -172,21 +180,14 @@ const updateEmployeeRole = async () => {
         const employeeData = await getQueryResults(queries.employee_names_id);
 
         // Convert roles data to an object and array
-        let rolesArray = [];
-        let rolesObject = {};
-        rolesData.forEach(data => {
-            rolesArray.push(data.title);
-            rolesObject[data.title] = data.id;
-        });
+        let rolesArray = generateDataArray(rolesData, 'title');
+        let rolesObject = generateDataObject(rolesData, 'title');
 
         // Convert employee data to an object and array
-        let employeesArray = [];
-        let employeesObject = {};
-        employeeData.forEach(data => {
-            employeesArray.push(data.name);
-            employeesObject[data.name] = data.id;
-        });
+        let employeesArray = generateDataArray(employeeData, 'name');
+        let employeesObject = generateDataObject(employeeData, 'name');
 
+        // Add new arrays to the inquirer question choices.
         let update_employee_role_questions = questions.update_employee_role_questions;
         update_employee_role_questions[0].choices = employeesArray;
         update_employee_role_questions[1].choices = rolesArray;
@@ -204,3 +205,36 @@ const updateEmployeeRole = async () => {
         displayMenu();
     }
 }
+
+// Update employee's manager
+const updateEmployeeManager = async () => {
+    const employeeData = await getQueryResults(queries.employee_names_id);
+
+    // Convert employee data to an object and array
+    let employeesArray = generateDataArray(employeeData, 'name');
+    let employeesObject = generateDataObject(employeeData, 'name');
+
+    let update_employee_manager_questions = questions.update_employee_manager_questions;
+    update_employee_manager_questions[0].choices = employeesArray;
+    update_employee_manager_questions[1].choices = employeesArray;
+
+    await inquirer.prompt(update_employee_manager_questions).then(function (response) {
+        let updateManagerQuery = `UPDATE employee SET manager_id = ${employeesObject[response.manager]} WHERE id = ${employeesObject[response.employee]};`
+        // let updateRoleQuery =
+        //     `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
+        sendQuery(updateManagerQuery);
+    });
+
+    displayMenu();
+}
+
+// let managerQuery = queries[1];
+//     let managerArray = [];
+//     let managerObject = {};
+//     connection.query(managerQuery, function (err, data) {
+//         if (err) throw err;
+//         data.forEach(rowData => {
+//             managerObject[rowData.manager] = rowData.id;
+//             managerArray.push(rowData.manager);
+//         });
+//     });
