@@ -122,6 +122,14 @@ const questions = {
             name: "department",
             choices: []
         }
+    ],
+    view_department_budget_questions: [
+        {
+            type: "list",
+            message: "Select Department:",
+            name: "department",
+            choices: []
+        }
     ]
     
 }

@@ -45,6 +45,7 @@ const displayMenu = () => {
                 displayTable(queries.departments_table);
                 break;
             case 11: // View Total Utilized Department Budget
+                displayTotalDepartmentBudget();
                 break;
             case 12: // Add Department
                 addDepartment(); 
@@ -331,6 +332,31 @@ const removeDepartment = async () => {
         });
         console.log("\nDepartment Removed\n");
         displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Department Budget
+const displayTotalDepartmentBudget = async () => {
+    try {
+        const departmentData = await getQueryResults(queries.departments_table);
+        // Convert department data to an object and array
+        let departmentsArray = generateDataArray(departmentData, 'name');
+        let departmentsObject = generateDataObject(departmentData, 'name');
+
+        let view_department_budget_questions = questions.view_department_budget_questions;
+        view_department_budget_questions[0].choices = departmentsArray
+
+        await inquirer.prompt(view_department_budget_questions).then(function (response) {
+            let departmentBudgetQuery = `SELECT department.id, department.name, SUM(role.salary) AS "total utilized budget" ` +
+                                        `FROM department ` +
+                                        `JOIN role ON department.id = role.department_id ` +
+                                        `WHERE department.id = ${departmentsObject[response.department]} ` +
+                                        `group by department.name`;
+            displayTable(departmentBudgetQuery);
+        });
     } catch (err) {
         console.log(err);
         displayMenu();
