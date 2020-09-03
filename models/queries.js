@@ -10,7 +10,7 @@ const queries = {
                     `INNER JOIN role ON employee.role_id = role.id ` +
                     `INNER JOIN department ON role.department_id = department.id ` +
                     `ORDER BY employee.id`,
-    employees_manager: `SELECT e.id, e.last_name, CONCAT(m.first_name, ' ', m.last_name) AS manager ` +
+    employees_manager: `SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ', m.last_name) AS manager ` +
                     `FROM employee AS e LEFT JOIN employee AS m ON e.manager_id = m.id`,
     employee_names_id: `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`,
     roles_title_id: `SELECT id, title FROM role ORDER BY role.id`,
