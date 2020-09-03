@@ -58,8 +58,10 @@ const displayMenu = () => {
         }
     })
 }
+// Start the main program
 displayMenu();
 
+/*========== Reusable functions ==========*/
 // This function returns results from query
 const getQueryResults = query => {
     return new Promise((resolve, reject) => {
@@ -73,7 +75,6 @@ const getQueryResults = query => {
     });
 }
 
-/*========== Reusable functions ==========*/
 // This function sends a query
 const sendQuery = query => {
     connection.query(query, function (err, data) {
