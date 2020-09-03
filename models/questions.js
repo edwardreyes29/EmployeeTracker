@@ -99,6 +99,14 @@ const questions = {
             name: "department",
             choices: []
         }
+    ],
+    remove_role_questions: [
+        {
+            type: "list",
+            message: "Select Role:",
+            name: "role",
+            choices: []
+        }
     ]
     
 }

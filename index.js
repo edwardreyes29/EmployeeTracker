@@ -39,6 +39,7 @@ const displayMenu = () => {
                 addRole();
                 break;
             case 9: // Remove Role
+                removeRole();
                 break;
             case 10: // View All Departments
                 displayTable(queries.departments_table);
@@ -140,6 +141,7 @@ const addEmployee = async () => {
                 `VALUES("${response.first_name}", "${response.last_name}", ${rolesObject[response.role]}, ${employeesObject[response.manager]})`;
             sendQuery(addQuery);
         });
+        console.log("\nEmployee Added\n");
         displayMenu();
     } catch (err) {
         console.log(err);
@@ -167,6 +169,7 @@ const removeEmployee = async () => {
             let deleteQuery = `DELETE FROM employee WHERE id=${employeesObject[response.employee]}`;
             sendQuery(deleteQuery);
         });
+        console.log("\nEmployee Removed\n");
         displayMenu();
     } catch (err) {
         console.log(err);
@@ -198,7 +201,7 @@ const updateEmployeeRole = async () => {
             let updateRoleQuery = `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
             sendQuery(updateRoleQuery);
         });
-
+        console.log("\nEmployee Role Updated\n");
         displayMenu();
 
     } catch (err) {
@@ -224,7 +227,7 @@ const updateEmployeeManager = async () => {
             let updateManagerQuery = `UPDATE employee SET manager_id = ${employeesObject[response.manager]} WHERE id = ${employeesObject[response.employee]};`
             sendQuery(updateManagerQuery);
         });
-
+        console.log("\nEmployee Manager Updated\n");
         displayMenu();
     } catch (err) {
         console.log(err);
@@ -236,8 +239,7 @@ const updateEmployeeManager = async () => {
 const addRole = async () => {
     try {
         const departmentData = await getQueryResults(queries.departments_table);
-        console.log(departmentData);
-        
+
         // Convert department data to an object and array
         let departmentsArray = generateDataArray(departmentData, 'name');
         let departmentsObject = generateDataObject(departmentData, 'name');
@@ -250,8 +252,33 @@ const addRole = async () => {
                                 `VALUES("${response.title}", ${response.salary}, ${departmentsObject[response.department]})`;
             sendQuery(addRoleQuery);
         });
-
+        console.log("\nRole Added\n");
         displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Remove Role
+// DELETE FROM role WHERE id = 8;
+const removeRole = async () => {
+    try {
+        const rolesData = await getQueryResults(queries.roles_title_id);
+
+        let rolesArray = generateDataArray(rolesData, 'title');
+        let rolesObject = generateDataObject(rolesData, 'title');
+
+        let remove_role_questions = questions.remove_role_questions;
+        remove_role_questions[0].choices = rolesArray;
+
+        await inquirer.prompt(remove_role_questions).then(function (response) {
+            let removeRoleQuery = `DELETE FROM role WHERE id = ${rolesObject[response.role]}`
+            sendQuery(removeRoleQuery);
+        });
+        console.log("\nRole Removed\n");
+        displayMenu();
+
     } catch (err) {
         console.log(err);
         displayMenu();
