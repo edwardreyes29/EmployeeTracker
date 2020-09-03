@@ -1,5 +1,5 @@
-const menu_questions = [
-    {
+const questions = {
+    menu_questions: [{
         type: "list",
         message: "What would you like to do?",
         name: "choice",
@@ -20,51 +20,58 @@ const menu_questions = [
             'Remove Department',
             'Quit'
         ]
-    }
-];
-
-const add_employee_questions = [
-    {
-        type: "input",
-        message: "Enter employee's first name: ",
-        name: "first_name"
-    },
-    {
-        type: "input",
-        message: "Enter employee's last name: ",
-        name: "last_name"
-    },
-    {
-        type: "list",
-        message: "What is the employee's role?",
-        name: "role",
-        choices: []
-    },
-    {
-        type: "list",
-        message: "Who is the employee's manager?",
-        name: "manager",
-        choices: []
-    }
-]
-
-const update_employee_role_questions = [
-    {
-        type: "list",
-        message: "What is the name of the employee whose role you want to change?",
-        name: "employee",
-        choices: []
-    },
-    {
-        type: "list",
-        message: "What is the employee's new role?",
-        name: "role",
-        choices: []
-    }
+    }],
+    add_employee_questions: [
+        {
+            type: "input",
+            message: "Enter employee's first name: ",
+            name: "first_name"
+        },
+        {
+            type: "input",
+            message: "Enter employee's last name: ",
+            name: "last_name"
+        },
+        {
+            type: "list",
+            message: "What is the employee's role?",
+            name: "role",
+            choices: []
+        },
+        {
+            type: "list",
+            message: "Who is the employee's manager?",
+            name: "manager",
+            choices: []
+        }
+    ],
+    remove_employee_questions : [
+        {
+            type: "list",
+            message: "Which Employee do you want to remove?",
+            name: "employee",
+            choices: []
+        }
+    ],
+    update_employee_role_questions: [
+        {
+            type: "list",
+            message: "What is the name of the employee whose role you want to change?",
+            name: "employee",
+            choices: []
+        },
+        {
+            type: "list",
+            message: "What is the employee's new role?",
+            name: "role",
+            choices: []
+        }
+        
+    ]
     
-]
+}
 
-const getMenuQuestion = questions => {
+const generateMenuObject = questions => {
     let obj = {}
     for (let i = 0; i < questions[0].choices.length; i++) {
         obj[questions[0].choices[i]] = i;
@@ -72,12 +79,7 @@ const getMenuQuestion = questions => {
     return obj;
 }
 
-menu_question_obj = getMenuQuestion(menu_questions)
+let menu_questions_obj = generateMenuObject(questions.menu_questions)
 
 
-module.exports = {
-    menu_questions,
-    menu_question_obj,
-    add_employee_questions,
-    update_employee_role_questions
-}
+module.exports = { questions, menu_questions_obj }
