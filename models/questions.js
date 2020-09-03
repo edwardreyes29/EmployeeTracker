@@ -81,6 +81,24 @@ const questions = {
             name: "manager",
             choices: []
         }
+    ],
+    add_role_questions: [
+        {
+            type: "input",
+            message: "Enter Role Title:",
+            name: "title"
+        },
+        {
+            type: "input", 
+            message: "Enter Role's Salary:",
+            name: "salary"
+        },
+        {
+            type: "list",
+            message: "Select Department:",
+            name: "department",
+            choices: []
+        }
     ]
     
 }

@@ -36,6 +36,7 @@ const displayMenu = () => {
                 displayTable(queries.roles_table);
                 break;
             case 8: // Add Role
+                addRole();
                 break;
             case 9: // Remove Role
                 break;
@@ -73,7 +74,9 @@ const getQueryResults = query => {
 // This function sends a query
 const sendQuery = query => {
     connection.query(query, function (err, data) {
-        if (err) throw err;
+        if (err) {
+            console.log(err);
+        }
     })
 }
 
@@ -133,9 +136,8 @@ const addEmployee = async () => {
         add_employee_questions[3].choices = employeesArray;
 
         await inquirer.prompt(add_employee_questions).then(function (response) {
-            let addQuery =
-                `INSERT INTO employee(first_name, last_name, role_id, manager_id)
-                VALUES("${response.first_name}", "${response.last_name}", ${rolesObject[response.role]}, ${employeesObject[response.manager]})`;
+            let addQuery = `INSERT INTO employee(first_name, last_name, role_id, manager_id) ` +
+                `VALUES("${response.first_name}", "${response.last_name}", ${rolesObject[response.role]}, ${employeesObject[response.manager]})`;
             sendQuery(addQuery);
         });
         displayMenu();
@@ -193,8 +195,7 @@ const updateEmployeeRole = async () => {
         update_employee_role_questions[1].choices = rolesArray;
 
         await inquirer.prompt(update_employee_role_questions).then(function (response) {
-            let updateRoleQuery =
-                `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
+            let updateRoleQuery = `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
             sendQuery(updateRoleQuery);
         });
 
@@ -208,20 +209,51 @@ const updateEmployeeRole = async () => {
 
 // Update employee's manager
 const updateEmployeeManager = async () => {
-    const employeeData = await getQueryResults(queries.employee_names_id);
+    try {
+        const employeeData = await getQueryResults(queries.employee_names_id);
 
-    // Convert employee data to an object and array
-    let employeesArray = generateDataArray(employeeData, 'name');
-    let employeesObject = generateDataObject(employeeData, 'name');
+        // Convert employee data to an object and array
+        let employeesArray = generateDataArray(employeeData, 'name');
+        let employeesObject = generateDataObject(employeeData, 'name');
 
-    let update_employee_manager_questions = questions.update_employee_manager_questions;
-    update_employee_manager_questions[0].choices = employeesArray;
-    update_employee_manager_questions[1].choices = employeesArray;
+        let update_employee_manager_questions = questions.update_employee_manager_questions;
+        update_employee_manager_questions[0].choices = employeesArray;
+        update_employee_manager_questions[1].choices = employeesArray;
 
-    await inquirer.prompt(update_employee_manager_questions).then(function (response) {
-        let updateManagerQuery = `UPDATE employee SET manager_id = ${employeesObject[response.manager]} WHERE id = ${employeesObject[response.employee]};`
-        sendQuery(updateManagerQuery);
-    });
+        await inquirer.prompt(update_employee_manager_questions).then(function (response) {
+            let updateManagerQuery = `UPDATE employee SET manager_id = ${employeesObject[response.manager]} WHERE id = ${employeesObject[response.employee]};`
+            sendQuery(updateManagerQuery);
+        });
 
-    displayMenu();
+        displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Add new Role
+const addRole = async () => {
+    try {
+        const departmentData = await getQueryResults(queries.departments_table);
+        console.log(departmentData);
+        
+        // Convert department data to an object and array
+        let departmentsArray = generateDataArray(departmentData, 'name');
+        let departmentsObject = generateDataObject(departmentData, 'name');
+
+        let add_role_questions = questions.add_role_questions;
+        add_role_questions[2].choices = departmentsArray;
+
+        await inquirer.prompt(add_role_questions).then(function (response) {
+            let addRoleQuery = `INSERT INTO role (title, salary, department_id) ` +
+                                `VALUES("${response.title}", ${response.salary}, ${departmentsObject[response.department]})`;
+            sendQuery(addRoleQuery);
+        });
+
+        displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
 }
