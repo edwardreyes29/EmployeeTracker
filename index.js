@@ -47,8 +47,10 @@ const displayMenu = () => {
             case 11: // View Total Utilized Department Budget
                 break;
             case 12: // Add Department
+                addDepartment(); 
                 break;
             case 13: // Remove Department
+                removeDepartment();
                 break;
             case 14:    // Quit
                 connection.end();
@@ -261,7 +263,6 @@ const addRole = async () => {
 }
 
 // Remove Role
-// DELETE FROM role WHERE id = 8;
 const removeRole = async () => {
     try {
         const rolesData = await getQueryResults(queries.roles_title_id);
@@ -273,12 +274,62 @@ const removeRole = async () => {
         remove_role_questions[0].choices = rolesArray;
 
         await inquirer.prompt(remove_role_questions).then(function (response) {
+            // Update employee role_id where they match the role id to be removed
+            let updateEmployeeQuery = `UPDATE employee SET role_id = null WHERE role_id = ${rolesObject[response.role]}`;
+            sendQuery(updateEmployeeQuery)
+            // Send Query to delete role
             let removeRoleQuery = `DELETE FROM role WHERE id = ${rolesObject[response.role]}`
             sendQuery(removeRoleQuery);
         });
         console.log("\nRole Removed\n");
         displayMenu();
 
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Add new Department
+const addDepartment = async () => {
+    try {
+        let add_department_questions = questions.add_department_questions;
+        await inquirer.prompt(add_department_questions).then(function (response) {
+            // Send query to add a new department
+            let addDepartmentQuery = `INSERT INTO department(name) VALUES("${response.department}");`
+            sendQuery(addDepartmentQuery);
+            
+        });
+        console.log("\nDepartment Added\n");
+            displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Remove Department
+const removeDepartment = async () => {
+    try {
+        const departmentData = await getQueryResults(queries.departments_table);
+
+        // Convert department data to an object and array
+        let departmentsArray = generateDataArray(departmentData, 'name');
+        let departmentsObject = generateDataObject(departmentData, 'name');
+
+        let remove_department_questions = questions.remove_department_questions;
+        remove_department_questions[0].choices = departmentsArray;
+
+        await inquirer.prompt(remove_department_questions).then(function (response) {
+            // Update Roles whose department_id match the id of the department to be deleted
+            let updateRoleQuery = `UPDATE role SET department_id = null WHERE department_id = ${departmentsObject[response.department]}`;
+            sendQuery(updateRoleQuery);
+
+            let removeDepartmentQuery = `DELETE FROM department WHERE id = ${departmentsObject[response.department]}`
+            sendQuery(removeDepartmentQuery);
+        });
+        console.log("\nDepartment Removed\n");
+        displayMenu();
     } catch (err) {
         console.log(err);
         displayMenu();

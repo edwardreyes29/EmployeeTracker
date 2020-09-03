@@ -107,6 +107,21 @@ const questions = {
             name: "role",
             choices: []
         }
+    ],
+    add_department_questions: [
+        {
+            type: "input",
+            message: "Enter Department Name:",
+            name: "department"
+        }
+    ],
+    remove_department_questions: [
+        {
+            type: "list",
+            message: "Select Department:",
+            name: "department",
+            choices: []
+        }
     ]
     
 }
