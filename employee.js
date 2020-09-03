@@ -31,12 +31,14 @@ const displayMenu = () => {
             case 6: // Update Employee Manager
                 break;
             case 7: // View All Roles
+                displayTable(queries.roles_table);
                 break;
             case 8: // Add Role
                 break;
             case 9: // Remove Role
                 break;
             case 10: // View All Departments
+                displayTable(queries.departments_table);
                 break;
             case 11: // View Total Utilized Department Budget
                 break;

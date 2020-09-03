@@ -15,6 +15,8 @@ const queries = {
     employee_names_id: `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`,
     roles_title_id: `SELECT id, title FROM role ORDER BY role.id`,
     managers_names_id: `SELECT DISTINCT m.id, CONCAT(m.first_name, ' ', m.last_name) AS manager FROM employee AS m JOIN employee AS e ON e.manager_id = m.id`,
+    roles_table: `SELECT * FROM role`,
+    departments_table: `SELECT * FROM department`,
 }
 
 
