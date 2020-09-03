@@ -1,213 +1,206 @@
 const inquirer = require("inquirer");
 const connection = require("./config/connection.js");
 const cTable = require("console.table");
+let { questions, menu_questions_obj } = require("./models/questions.js")
+let { queries } = require("./models/queries.js");
 
-let { menu_questions, menu_question_obj, add_employee_questions, update_employee_role_questions } = require("./model/questions.js")
-let { queries } = require("./model/queries.js")
-
-async function displayMenu() {
+const displayMenu = () => {
     // Get choice from user
-    let menuChoice = await inquirer.prompt(menu_questions)
-        .then(function (response) {
-            return response.choice;
-        })
-
-    // console.log(menu_question_obj[menuChoice]);
-    let menuChoiceNum = menu_question_obj[menuChoice];
-    switch (menuChoiceNum) {
-        case 0: // Display all employees
-            let title1 = "Employees:\n==========";
-            let query1 = queries[menuChoiceNum];
-            displayTable(title1, query1);
-            break;
-        case 1: // Display employees by department
-            let title2 = "Employee by department:\n=======================";
-            let query2 = queries[menuChoiceNum]
-            displayTable(title2, query2);
-            break;
-        case 2: // Display employees by manager (if any)
-            let title3 = "Employee by manager:\n====================";
-            let query3 = queries[menuChoiceNum]
-            displayTable(title3, query3);
-            break;
-        case 3:  // Adds employee to DB
-            let query4 = queries[menuChoiceNum];
-            await addEmployee(query4);
-            break;
-        case 4: // Remove employee
-            let query5 = queries[menuChoiceNum];
-            await removeEmployee(query5);
-            break;
-        case 5: // Update Employee Role
-            await updateEmployee();
-            break;
-        case 6: // Update Employee Manager
-            break;
-        case 7: // View All Roles
-            let title7 = "Roles:\n======"
-            let query7 =
-                `SELECT * FROM role`;
-            displayTable(title7, query7);
-            break;
-        case 8: // Add Role
-            break;
-        case 9: // Remove Role
-            break;
-        case 10: // View All Departments
-            let title10 = "Departments:\n============"
-            let query10 =
-                `SELECT * FROM department`;
-            displayTable(title10, query10);
-            break;
-        case 11: // View Total Utilized Department Budget
-            break;
-        case 12: // Add Department
-            break;
-        case 13: // Remove Department
-            break;
-        case 14:    // Quit
-            connection.end();
-            return;
-    }
-    await displayMenu();
+    inquirer.prompt(questions.menu_questions).then(function (response) {
+        // get number based on choice
+        let menuChoiceNum = menu_questions_obj[response.choice];
+        switch (menuChoiceNum) {
+            case 0: // Display all employees
+                displayTable(queries.all_employees);
+                break;
+            case 1: // Display employees by department
+                displayTable(queries.employees_department);
+                break;
+            case 2: // Display employees by manager (if any)
+                displayTable(queries.employees_manager);
+                break;
+            case 3:  // Adds employee to DB
+                // let query4 = queries[menuChoiceNum];
+                addEmployee();
+                break;
+            case 4: // Remove employee
+                removeEmployee();
+                break;
+            case 5: // Update Employee Role
+                updateEmployeeRole();
+                break;
+            case 6: // Update Employee Manager
+                break;
+            case 7: // View All Roles
+                displayTable(queries.roles_table);
+                break;
+            case 8: // Add Role
+                break;
+            case 9: // Remove Role
+                break;
+            case 10: // View All Departments
+                displayTable(queries.departments_table);
+                break;
+            case 11: // View Total Utilized Department Budget
+                break;
+            case 12: // Add Department
+                break;
+            case 13: // Remove Department
+                break;
+            case 14:    // Quit
+                connection.end();
+                return;
+        }
+    })
 }
 displayMenu();
 
-const displayTable = (title, query) => {
-    connection.query(query, function (err, data) {
-        if (err) throw err;
-        const table = cTable.getTable(data);
-        console.log('\n\n' + title + '\n')
-        console.log(table + '\n');
-    })
+// This function returns results from query
+const getQueryResults = query => {
+    return new Promise((resolve, reject) => {
+        connection.query(query, function (err, data) {
+            if (err) {
+                reject('Query Error');
+            } else {
+                resolve(data);
+            }
+        });
+    });
 }
+
+// This function sends a query
 const sendQuery = query => {
     connection.query(query, function (err, data) {
         if (err) throw err;
     })
 }
 
-async function addEmployee(queries) {
-    // Get role titles and ids to store the in array for inquirer prompt
-    let roleQuery = queries[0];
-    let roleArray = [];
-    let roleObject = {};
-    connection.query(roleQuery, function (err, data) {
-        if (err) throw err;
-        data.forEach(rowData => {
-            roleObject[rowData.title] = rowData.id; // This is used to get the id of the role when query is sent
-            roleArray.push(rowData.title);  // Store each role title in array to use for inquirer prompt
+// This functions gets a query and displays it as a table.
+const displayTable = async query => {
+    try {
+        const data = await getQueryResults(query);
+        const table = cTable.getTable(data);
+        console.log('\n' + table + '\n');
+        displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
+}
+
+// Add an employee to DB
+const addEmployee = async () => {
+    try {
+        // Get roles and manger names
+        const rolesData = await getQueryResults(queries.roles_title_id);
+        const employeeData = await getQueryResults(queries.employee_names_id);
+
+        // Convert roles data to an object and array
+        let rolesArray = [];
+        let rolesObject = {};
+        rolesData.forEach(data => {
+            rolesArray.push(data.title);
+            rolesObject[data.title] = data.id;
         });
-    });
 
-    // Get manager names and ids to store in array for inquirer prompt
-    let managerQuery = queries[1];
-    let managerArray = [];
-    let managerObject = {};
-    connection.query(managerQuery, function (err, data) {
-        if (err) throw err;
-        data.forEach(rowData => {
-            managerObject[rowData.manager] = rowData.id;
-            managerArray.push(rowData.manager);
+        // Convert employee data to an object and array
+        let employeesArray = [];
+        let employeesObject = {};
+        employeeData.forEach(data => {
+            employeesArray.push(data.name);
+            employeesObject[data.name] = data.id;
         });
-    });
 
-    // Add None key name and null value so user can choose to not add a manager for a particular employee.
-    managerArray = managerArray.concat(["None"]);
-    managerObject.None = null;
+        // Add None key name and null value to both manager objects
+        employeesArray = employeesArray.concat(["None"]);
+        employeesObject.None = null;
 
-    // Create Prompt with updated roleArray and managerArray
-    add_employee_questions[2].choices = roleArray;
-    add_employee_questions[3].choices = managerArray;
-    // console.log(add_employee_questions)
+        // Add arrays to questions choices for inquirer prompt
+        let add_employee_questions = questions.add_employee_questions;
+        add_employee_questions[2].choices = rolesArray;
+        add_employee_questions[3].choices = employeesArray;
 
-    await inquirer.prompt(add_employee_questions)
-        .then(function (response) {
-            let query =
+        await inquirer.prompt(add_employee_questions).then(function (response) {
+            let addQuery =
                 `INSERT INTO employee(first_name, last_name, role_id, manager_id)
-                VALUES("${response.first_name}", "${response.last_name}", ${roleObject[response.role]}, ${managerObject[response.manager]})`;
-            sendQuery(query);
+                VALUES("${response.first_name}", "${response.last_name}", ${rolesObject[response.role]}, ${employeesObject[response.manager]})`;
+            sendQuery(addQuery);
         });
+        displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
 }
 
-async function removeEmployee(query) {
-    // Get role titles and ids to store the in array for inquirer prompt
-    let employeeQuery = query;
-    let employeeArray = [];
-    let employeeObject = {};
-    let remove_employee_questions = [];
-    connection.query(employeeQuery, function (err, data) {
-        if (err) throw err;
-        data.forEach(rowData => {
-            employeeObject[rowData.name] = rowData.id; // This is used to get the id of the role when query is sent
-            employeeArray.push(rowData.name);  // Store each role title in array to use for inquirer prompt
+// Remove an employee from DB and sets null to any manager_id of the removed employee
+const removeEmployee = async () => {
+    try {
+        const employeeData = await getQueryResults(queries.employee_names_id);
+
+        // Convert employee data to an object and array
+        let employeesArray = [];
+        let employeesObject = {};
+        employeeData.forEach(data => {
+            employeesArray.push(data.name);
+            employeesObject[data.name] = data.id;
         });
-        remove_employee_questions = [
-            {
-                type: "list",
-                message: "Which Employee do you want to remove?",
-                name: "employee",
-                choices: employeeArray
-            }
-        ];
-        inquirer.prompt(remove_employee_questions)
-            .then(function (response) {
-                // Sets manager_id of employees whose manager_idj matches the id of the employee to be removed
-                let updateQuery = `UPDATE employee SET manager_id = null WHERE manager_id = ${employeeObject[response.employee]}`;
-                sendQuery(updateQuery);
-                // Once the foreign key constraint has been resolved, remove the employee
-                let query =
-                    `DELETE FROM employee WHERE id=${employeeObject[response.employee]}`
-                sendQuery(query);
-            })
-    });
+
+        let remove_employee_questions = questions.remove_employee_questions;
+        remove_employee_questions[0].choices = employeesArray;
+
+        await inquirer.prompt(remove_employee_questions).then(function (response) {
+            // Sets manager ids of other employees to null whose manager id's match the employees id to be removed
+            let updateQuery = `UPDATE employee SET manager_id = null WHERE manager_id = ${employeesObject[response.employee]}`;
+            sendQuery(updateQuery);
+
+            let deleteQuery = `DELETE FROM employee WHERE id=${employeesObject[response.employee]}`;
+            sendQuery(deleteQuery);
+            console.log("Success!!!");
+        });
+        displayMenu();
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
 }
 
-async function updateEmployee() {
-    // Get role titles and ids to store the in array for inquirer prompt
-    // update_employee_role_questions[1].choices = await getRoleArray();
-    // update_employee_role_questions[0].choices = await getEmployeeArray();
-    // console.log(update_employee_role_questions[1].choices)
-    // console.log(update_employee_role_questions[0].choices)
-    getEmployeeArray().then((value) => console.log(value))
-}
+const updateEmployeeRole = async () => {
+    try {
+        // Get roles and manger names
+        const rolesData = await getQueryResults(queries.roles_title_id);
+        const employeeData = await getQueryResults(queries.employee_names_id);
 
-async function getRoleArray() {
-    let roleQuery = `SELECT id, title FROM role ORDER BY role.id`;
-    let roleArray = [];
-    let roleObject = {};
-    await connection.query(roleQuery, function (err, data) {
-        if (err) throw err;
-        data.forEach(rowData => {
-            roleObject[rowData.title] = rowData.id; // This is used to get the id of the role when query is sent
-            roleArray.push(rowData.title);  // Store each role title in array to use for inquirer prompt
+        // Convert roles data to an object and array
+        let rolesArray = [];
+        let rolesObject = {};
+        rolesData.forEach(data => {
+            rolesArray.push(data.title);
+            rolesObject[data.title] = data.id;
         });
-        // console.log(roleArray);
-        return roleArray;
-    });
-}
-let getEmployeeArray = async () => { 
-    let employeeQuery = `SELECT employee.id, CONCAT(employee.first_name, ' ', employee.last_name) AS name FROM employee`;
-    let employeeArray = [];
-    let employeeObject = {};
-    connection.query(employeeQuery, function (err, data) {
-        if (err) throw err;
-        data.forEach(rowData => {
-            employeeObject[rowData.name] = rowData.id; // This is used to get the id of the role when query is sent
-            employeeArray.push(rowData.name);  // Store each role title in array to use for inquirer prompt
+
+        // Convert employee data to an object and array
+        let employeesArray = [];
+        let employeesObject = {};
+        employeeData.forEach(data => {
+            employeesArray.push(data.name);
+            employeesObject[data.name] = data.id;
         });
-        return employeeArray;
-    });
-};
 
-async function update_employeePrompt(questions) {
-    await inquirer.prompt(update_employee_role_questions)
-        .then(function (response) {
-            let query =
-                `UPDATE employee SET role_id = ${roleObject[response.role]} WHERE id = ${employee.object[response.employee]}`;
-            sendQuery(query);
+        let update_employee_role_questions = questions.update_employee_role_questions;
+        update_employee_role_questions[0].choices = employeesArray;
+        update_employee_role_questions[1].choices = rolesArray;
+
+        await inquirer.prompt(update_employee_role_questions).then(function (response) {
+            let updateRoleQuery =
+                `UPDATE employee SET role_id = ${rolesObject[response.role]} WHERE id = ${employeesObject[response.employee]}`;
+            sendQuery(updateRoleQuery);
         });
+
+        displayMenu();
+
+    } catch (err) {
+        console.log(err);
+        displayMenu();
+    }
 }
-
-
-
